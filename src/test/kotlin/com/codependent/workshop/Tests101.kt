@@ -145,6 +145,24 @@ class Tests101 {
         latch.await()
     }
 
+    @Test
+    fun backPressure2() {
+        val latch = CountDownLatch(1000)
+
+        val numberGenerator = counter(1)
+        val processor = EmitterProcessor.create<Long>()
+        numberGenerator.onBackpressureDrop().subscribeWith(processor)
+
+        Thread.sleep(5000)
+
+        processor.subscribe {
+            logger.info("Element [{}]", it)
+            latch.countDown()
+        }
+
+        latch.await()
+    }
+
 
     /**
      * Direct Sink invocation
