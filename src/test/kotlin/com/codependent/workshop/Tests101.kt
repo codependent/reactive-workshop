@@ -1,11 +1,11 @@
 package com.codependent.workshop
 
+import io.micrometer.core.instrument.Metrics.counter
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.yaml.snakeyaml.emitter.Emitter
 import reactor.core.publisher.EmitterProcessor
 import reactor.core.publisher.Flux
 import reactor.core.publisher.UnicastProcessor
@@ -211,8 +211,8 @@ class Tests101 {
 
     /**
      * Subscription to an upstream Publisher
-     * Buffer of elements emitted before subscription
      * Multiple subscribers to processor through a ConnectableFlux
+     * @see https://stackoverflow.com/questions/49536849/why-does-a-unicastprocessor-plus-connectableflux-send-previously-emitted-items-d/49538007#49538007
      */
     @Test
     fun unicastProcessor4() {
@@ -221,7 +221,7 @@ class Tests101 {
         val numberGenerator: Flux<Long> = counter(1000)
         val processor = UnicastProcessor.create<Long>()
         numberGenerator.subscribeWith(processor)
-        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.publish().autoConnect()
+        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.log().publish().autoConnect()
 
         Thread.sleep(5000)
 
@@ -241,8 +241,8 @@ class Tests101 {
 
     /**
      * Subscription to an upstream Publisher
-     * No buffer of elements emitted before subscription
      * Multiple subscribers to processor through a ConnectableFlux
+     * @see https://stackoverflow.com/questions/49536849/why-does-a-unicastprocessor-plus-connectableflux-send-previously-emitted-items-d/49538007#49538007
      */
     @Test
     fun unicastProcessor5() {
@@ -251,7 +251,7 @@ class Tests101 {
         val numberGenerator: Flux<Long> = counter(1000)
         val processor = UnicastProcessor.create<Long>()
         numberGenerator.subscribeWith(processor)
-        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.publish()
+        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.log().publish()
         connectableFlux.connect()
 
         Thread.sleep(5000)
@@ -272,7 +272,7 @@ class Tests101 {
 
     private fun counter(emissionIntervalMillis: Long) =
             Flux.interval(Duration.ofMillis(emissionIntervalMillis))
-                    .map { it }.log()
+                    .map { it }.doOnSubscribe{ println("Counter subscribed")}.log()
 
 
     private fun getReactiveList() = Flux.just("uno", "dos", "tres")
