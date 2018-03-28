@@ -1,9 +1,11 @@
 package com.codependent.workshop
 
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.yaml.snakeyaml.emitter.Emitter
 import reactor.core.publisher.EmitterProcessor
 import reactor.core.publisher.Flux
 import reactor.core.publisher.UnicastProcessor
@@ -144,29 +146,126 @@ class Tests101 {
     }
 
 
+    /**
+     * Direct Sink invocation
+     */
     @Test
     fun unicastProcessor() {
-        val latch = CountDownLatch(20)
+        val latch = CountDownLatch(1)
 
-        val numberGenerator = counter(1000)
         val processor = UnicastProcessor.create<Long>()
-        processor.publish()
+
+        processor.log().doOnComplete { latch.countDown() }
+                .subscribe {
+                    logger.info("Element [{}]", it)
+                }
+
+        processor.onNext(23)
+        processor.onNext(45)
+        processor.onComplete()
+
+        latch.await()
+    }
+
+    /**
+     * Only one UnicastProcessor subscription allowed
+     */
+    @Test
+    fun unicastProcessor2() {
+        val processor = UnicastProcessor.create<Long>()
+
         processor.subscribe {
             logger.info("Element [{}]", it)
         }
 
-        processor.onNext(23)
-/*
-        processor.subscribe {
+        processor.doOnError {
+            Assert.assertTrue(it is IllegalStateException)
+        }.subscribe {
             logger.info("Element2 [{}]", it)
-        }*/
+        }
 
-        /*
+    }
 
-        processor.publish().autoConnect()
-                .subscribe {
-                    logger.info("Element [{}]", it)
-                }*/
+    /**
+     * Subscription to an upstream Publisher
+     * Buffer of elements emitted before subscription
+     */
+    @Test
+    fun unicastProcessor3() {
+        val latch = CountDownLatch(10)
+
+        val numberGenerator: Flux<Long> = counter(1000)
+        val processor = UnicastProcessor.create<Long>()
+
+        numberGenerator.subscribeWith(processor)
+
+        Thread.sleep(5000)
+
+        processor.subscribe {
+            logger.info("Element [{}]", it)
+            latch.countDown()
+        }
+
+        latch.await()
+    }
+
+    /**
+     * Subscription to an upstream Publisher
+     * Buffer of elements emitted before subscription
+     * Multiple subscribers to processor through a ConnectableFlux
+     */
+    @Test
+    fun unicastProcessor4() {
+        val latch = CountDownLatch(15)
+
+        val numberGenerator: Flux<Long> = counter(1000)
+        val processor = UnicastProcessor.create<Long>()
+        numberGenerator.subscribeWith(processor)
+        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.publish().autoConnect()
+
+        Thread.sleep(5000)
+
+        connectableFlux.subscribe {
+            logger.info("Element [{}]", it)
+            latch.countDown()
+        }
+
+        Thread.sleep(5000)
+
+        connectableFlux.subscribe {
+            logger.info("Element2 [{}]", it)
+        }
+
+        latch.await()
+    }
+
+    /**
+     * Subscription to an upstream Publisher
+     * No buffer of elements emitted before subscription
+     * Multiple subscribers to processor through a ConnectableFlux
+     */
+    @Test
+    fun unicastProcessor5() {
+        val latch = CountDownLatch(15)
+
+        val numberGenerator: Flux<Long> = counter(1000)
+        val processor = UnicastProcessor.create<Long>()
+        numberGenerator.subscribeWith(processor)
+        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.publish()
+        connectableFlux.connect()
+
+        Thread.sleep(5000)
+
+        connectableFlux.subscribe {
+            logger.info("Element [{}]", it)
+            latch.countDown()
+        }
+
+        Thread.sleep(5000)
+
+        connectableFlux.subscribe {
+            logger.info("Element2 [{}]", it)
+        }
 
         latch.await()
     }
