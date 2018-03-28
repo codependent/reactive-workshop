@@ -1,6 +1,5 @@
 package com.codependent.workshop
 
-import io.micrometer.core.instrument.Metrics.counter
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -129,18 +128,19 @@ class Tests101 {
 
     @Test
     fun backPressure() {
-        val latch = CountDownLatch(20)
+        val latch = CountDownLatch(1)
 
         val numberGenerator = counter(1)
         val processor = EmitterProcessor.create<Long>()
-        numberGenerator.onBackpressureDrop().subscribeWith(processor)
+        numberGenerator.subscribeWith(processor)
 
         Thread.sleep(5000)
 
-        processor.publish().autoConnect()
-                .subscribe {
-                    logger.info("Element [{}]", it)
-                }
+        processor.doOnError {
+            latch.countDown()
+        }.subscribe {
+            logger.info("Element [{}]", it)
+        }
 
         latch.await()
     }
@@ -272,7 +272,7 @@ class Tests101 {
 
     private fun counter(emissionIntervalMillis: Long) =
             Flux.interval(Duration.ofMillis(emissionIntervalMillis))
-                    .map { it }.doOnSubscribe{ println("Counter subscribed")}.log()
+                    .map { it }.doOnSubscribe { println("Counter subscribed") }.log()
 
 
     private fun getReactiveList() = Flux.just("uno", "dos", "tres")
