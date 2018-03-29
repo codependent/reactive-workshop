@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.EmitterProcessor
 import reactor.core.publisher.Flux
 import reactor.core.publisher.UnicastProcessor
+import reactor.core.publisher.toFlux
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -293,7 +294,7 @@ class Tests101 {
                     .map { it }.doOnSubscribe { println("Counter subscribed") }.log()
 
 
-    private fun getReactiveList() = Flux.just("uno", "dos", "tres")
+    private fun getReactiveList() = listOf("uno", "dos", "tres").toFlux()
 
     private fun getList(): List<String> = listOf("uno", "dos", "tres")
 
