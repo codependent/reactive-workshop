@@ -1,3 +1,3 @@
 package com.codependent.cryptomarket.ui.dto
 
-data class Movie(val name: String)
+data class Film(val title: String)

@@ -1,3 +1,5 @@
 package com.codependent.cryptomarket.ui.dto
 
-data class Character(val name: String, val movies: List<Movie>)
+import java.net.URI
+
+data class Character(val name: String, val films: List<URI>)
