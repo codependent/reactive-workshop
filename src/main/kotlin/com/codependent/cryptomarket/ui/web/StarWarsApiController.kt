@@ -30,7 +30,7 @@ class StarWarsApiController {
     fun getCharacterFilms(@PathVariable id: Int): Flux<Film> {
         return queryCharacter(id)
                 .flatMapMany { Flux.just(*it.films.toTypedArray()) }
-                .flatMap({
+                .flatMap{
                     val webClient = WebClient.builder()
                     webClient.baseUrl("https://swapi.co/api/").build()
                             .get().uri(it)
@@ -38,7 +38,7 @@ class StarWarsApiController {
                             .accept(APPLICATION_JSON).retrieve()
                             .bodyToMono(Film::class.java)
 
-                }, 100)
+                }
     }
 
     @GetMapping("/api/people/{id}/filmsSerial")
