@@ -63,7 +63,7 @@ class StarWarsApiController {
                 .get().uri(uri)
                 .header("Content-Type", APPLICATION_JSON_VALUE)
                 .accept(APPLICATION_JSON).retrieve()
-                .bodyToMono(Film::class.java)
+                .bodyToMono(Film::class.java).log()
     }
 
     private fun findFilmRestTemplate(uri: URI): Film {
@@ -78,7 +78,7 @@ class StarWarsApiController {
     }
 
     private fun findFilmDeferredRestTemplate(uri: URI): Mono<Film> {
-        return Mono.defer { findFilmRestTemplate(uri).toMono() }.subscribeOn(Schedulers.elastic())
+        return Mono.defer { findFilmRestTemplate(uri).toMono() }.log().subscribeOn(Schedulers.elastic())
     }
 
 }
