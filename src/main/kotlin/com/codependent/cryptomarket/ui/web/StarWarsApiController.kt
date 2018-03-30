@@ -68,7 +68,7 @@ class StarWarsApiController {
 
     private fun findFilmRestTemplate(uri: URI): Film {
         val restTemplate = RestTemplate()
-        val headers = HttpHeaders();
+        val headers = HttpHeaders()
         headers.add("Accept", MediaType.APPLICATION_JSON_VALUE)
         headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE)
         headers.add("User-Agent", "curl/7.37.0")
