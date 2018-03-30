@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import reactor.core.scheduler.Schedulers
 import java.net.URI
@@ -35,15 +36,15 @@ class StarWarsApiController {
                 val returnedFilms = mutableListOf<Film>()
                 val character = findCharacterWebClient(id).subscribeOn(Schedulers.elastic()).block()
                 character?.films?.forEach { returnedFilms.add(findFilmRestTemplate(it)) }
-                Flux.just(*returnedFilms.toTypedArray())
+                returnedFilms.toFlux()
             }
             "parallel-rest-template" ->
                 findCharacterWebClient(id)
-                    .flatMapMany { Flux.just(*it.films.toTypedArray()) }
+                    .flatMapMany { it.films.toFlux() }
                     .flatMap(this::findFilmDeferredRestTemplate)
             else ->
                 findCharacterWebClient(id)
-                    .flatMapMany { Flux.just(*it.films.toTypedArray()) }
+                    .flatMapMany { it.films.toFlux() }
                     .flatMap(this::findFilmWebClient)
         }
     }
