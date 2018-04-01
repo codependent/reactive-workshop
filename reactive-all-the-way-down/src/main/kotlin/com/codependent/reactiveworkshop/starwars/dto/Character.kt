@@ -1,4 +1,4 @@
-package com.codependent.cryptomarket.ui.dto
+package com.codependent.reactiveworkshop.starwars.dto
 
 import java.net.URI
 

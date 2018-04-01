@@ -1,4 +1,4 @@
-package com.codependent.cryptomarket.ui
+package com.codependent.reactiveworkshop.starwars
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

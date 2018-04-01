@@ -1,4 +1,4 @@
-package com.codependent.workshop
+package com.codependent.reactiveworkshop
 
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -16,60 +16,76 @@ import java.util.concurrent.CountDownLatch
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class Tests101 {
+class ReactiveProgramming101Tests {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     @Test
-    fun streamOperators() {
-        val numbers = getList().stream()
-                .map { it.toUpperCase() }
-                .flatMap { Stream.of(it, it) }.collect(Collectors.toList())
-        println(numbers)
-        assertEquals(6, numbers.size)
+    fun streamOperatorsTest() {
+        val stringsStream = getStringList().stream()
+        val strings = stringsStream.map { it.toUpperCase() }
+                .flatMap { Stream.of(it, it) }
+                .collect(Collectors.toList())
+        logger.info("{}", strings)
+        assertEquals(6, strings.size)
+
+        try {
+            stringsStream.count()
+            Assert.fail("No debería llegar aquí")
+        } catch (ise: IllegalStateException) {
+            logger.error(ise.message)
+        }
     }
 
     @Test
-    fun reactiveOperators() {
+    fun reactiveOperatorsTest() {
         var elements = 0
-        val numbers = getReactiveList()
-                .map { it.toUpperCase() }
-                .flatMap { it -> Flux.just(it, it) }
+        val strings = getStringListReactive()
+                .map(String::toUpperCase)
+                .flatMap(this::duplicateStringReactive)
                 .doOnComplete { assertEquals(6, elements) }
-        numbers.subscribe {
-            println(it)
+
+        strings.subscribe {
+            logger.info("{}", it)
+            elements++
+        }
+
+        elements = 0
+        strings.subscribe {
+            logger.info("{}", it)
             elements++
         }
     }
 
     @Test
-    fun completableFutureAsync() {
+    fun completableFutureAsyncTest() {
         logger.info("Starting")
-        val numbers = CompletableFuture.supplyAsync {
+        val strings = CompletableFuture.supplyAsync {
             logger.info("Getting list")
-            getList()
+            getStringList()
         }.thenApplyAsync {
             val upperCaseNumbers = mutableListOf<String>()
-            it.forEach { upperCaseNumbers.add(uppercaseService(it)) }
-            logger.info("Uppercase numbers [{}]", upperCaseNumbers)
+            it.forEach { upperCaseNumbers.add(it.toUpperCase()) }
+            logger.info("Uppercase strings [{}]", upperCaseNumbers)
             upperCaseNumbers
         }.thenApplyAsync {
             val doubledNumbers = mutableListOf<String>()
-            it.forEach { doubledNumbers.addAll(doubleListService(it)) }
-            logger.info("Doubled numbers [{}]", doubledNumbers)
+            it.forEach { doubledNumbers.addAll(duplicateString(it)) }
+            logger.info("Doubled strings [{}]", doubledNumbers)
             doubledNumbers
         }
-        val gottenNumbers = numbers.get()
+        logger.info("blocked")
+        val gottenNumbers = strings.get()
         logger.info("Finished [{}]", gottenNumbers)
         assertEquals(6, gottenNumbers.size)
     }
 
     @Test
-    fun reactiveAsync1() {
+    fun reactiveAsync1Test() {
         var elements = 0
-        val numbers = getReactiveList()
-                .map { uppercaseService(it) }
-                .flatMap { doubleReactiveService(it) }
+        val strings = getStringListReactive()
+                .map(String::toUpperCase)
+                .flatMap { duplicateStringReactive(it) }
                 .log()
                 .doOnNext {
                     logger.info("onNext() [{}]", it)
@@ -77,19 +93,20 @@ class Tests101 {
                 }.doOnComplete {
                     logger.info("Finished")
                     assertEquals(6, elements)
-                }.subscribeOn(Schedulers.elastic())
+                }
         logger.info("--PRESUBSCRIBE--")
-        numbers.subscribe {
+
+        strings.subscribe {
             logger.info("Element [{}]", it)
         }
     }
 
     @Test
-    fun reactiveAsync2() {
+    fun reactiveAsync2Test() {
         val latch = CountDownLatch(6)
-        val numbers = getReactiveList()
-                .map { uppercaseService(it) }
-                .flatMap { doubleReactiveService(it) }
+        val strings = getStringListReactive()
+                .map(String::toUpperCase)
+                .flatMap { duplicateStringReactive(it) }
                 .log()
                 .doOnNext {
                     logger.info("onNext() [{}]", it)
@@ -99,36 +116,38 @@ class Tests101 {
                 }.subscribeOn(Schedulers.elastic())
 
         logger.info("--PRESUBSCRIBE--")
-        numbers.subscribe {
+        strings.subscribe {
             logger.info("Element [{}]", it)
         }
         latch.await()
     }
 
     @Test
-    fun hotPublisher() {
-        val latch = CountDownLatch(20)
+    fun hotPublisherTest() {
+        val latch = CountDownLatch(10)
 
-        val numberGenerator = counter(1000).subscribeOn(Schedulers.elastic()).publish()
+        val numberGenerator = counter(1000).publish()
         numberGenerator.connect()
 
         Thread.sleep(5000)
 
         numberGenerator.subscribe {
             logger.info("Element [{}]", it)
+            latch.countDown()
         }
 
         Thread.sleep(5000)
 
         numberGenerator.subscribe {
             logger.info("Element2 [{}]", it)
+            latch.countDown()
         }
 
         latch.await()
     }
 
     @Test
-    fun backPressure() {
+    fun backPressureTest() {
         val latch = CountDownLatch(1)
 
         val numberGenerator = counter(1)
@@ -147,7 +166,7 @@ class Tests101 {
     }
 
     @Test
-    fun backPressure2() {
+    fun backPressure2Text() {
         val latch = CountDownLatch(1000)
 
         val numberGenerator = counter(1)
@@ -240,7 +259,7 @@ class Tests101 {
         val numberGenerator: Flux<Long> = counter(1000)
         val processor = UnicastProcessor.create<Long>()
         numberGenerator.subscribeWith(processor)
-        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.log().publish().autoConnect()
+        val connectableFlux = processor.doOnSubscribe { logger.info("subscribed!") }.log().publish().autoConnect()
 
         Thread.sleep(5000)
 
@@ -270,7 +289,7 @@ class Tests101 {
         val numberGenerator: Flux<Long> = counter(1000)
         val processor = UnicastProcessor.create<Long>()
         numberGenerator.subscribeWith(processor)
-        val connectableFlux = processor.doOnSubscribe { println("subscribed!") }.log().publish()
+        val connectableFlux = processor.doOnSubscribe { logger.info("subscribed!") }.log().publish()
         connectableFlux.connect()
 
         Thread.sleep(5000)
@@ -291,16 +310,14 @@ class Tests101 {
 
     private fun counter(emissionIntervalMillis: Long) =
             Flux.interval(Duration.ofMillis(emissionIntervalMillis))
-                    .map { it }.doOnSubscribe { println("Counter subscribed") }.log()
+                    .map { it }.doOnSubscribe { logger.info("Counter subscribed") }.log()
 
 
-    private fun getReactiveList() = listOf("uno", "dos", "tres").toFlux()
+    private fun getStringList(): List<String> = listOf("uno", "dos", "tres")
 
-    private fun getList(): List<String> = listOf("uno", "dos", "tres")
+    private fun getStringListReactive() = getStringList().toFlux()
 
-    private fun uppercaseService(string: String) = string.toUpperCase()
+    private fun duplicateString(string: String) = listOf(string, string)
 
-    private fun doubleListService(string: String) = listOf(string, string)
-
-    private fun doubleReactiveService(string: String) = Flux.just(string, string)
+    private fun duplicateStringReactive(string: String) = duplicateString(string).toFlux()
 }
