@@ -5,10 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.EmitterProcessor
-import reactor.core.publisher.Flux
-import reactor.core.publisher.UnicastProcessor
-import reactor.core.publisher.toFlux
+import reactor.core.publisher.*
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -183,6 +180,96 @@ class ReactiveProgramming101Tests {
         latch.await()
     }
 
+    /**
+     * No parallelism
+     */
+    @Test
+    fun parallel1() {
+        val latch = CountDownLatch(1)
+
+        val range = Flux.range(1, 10)
+                .map {
+                    expensiveCalculation(it)
+                }.doOnComplete { latch.countDown() }
+
+        range.subscribe {
+            logger.info("{}", it)
+        }
+
+        latch.await()
+
+    }
+
+    private fun expensiveCalculation(number: Int): Long {
+        val random = (Math.random() * 5000).toLong()
+        Thread.sleep(random)
+        return number * random
+    }
+
+    /**
+     * No parallelism
+     */
+    @Test
+    fun parallel2() {
+        val latch = CountDownLatch(1)
+
+        val range = Flux.range(1, 10)
+                .map {
+                    expensiveCalculation(it)
+                }.doOnComplete { latch.countDown() }
+                .subscribeOn(Schedulers.elastic())
+
+        range.subscribe {
+            logger.info("{}", it)
+        }
+
+        latch.await()
+
+    }
+
+    /**
+     * No parallelism
+     */
+    @Test
+    fun parallel3() {
+        val latch = CountDownLatch(1)
+
+        val range = Flux.range(1, 10)
+                .flatMap {
+                    expensiveCalculation(it).toMono()
+                            .subscribeOn(Schedulers.elastic())
+                }.doOnComplete { latch.countDown() }
+
+
+        range.subscribe {
+            logger.info("{}", it)
+        }
+
+        latch.await()
+
+    }
+
+    /**
+     * Parallelism
+     */
+    @Test
+    fun parallel4() {
+        val latch = CountDownLatch(1)
+
+        val range = Flux.range(1, 10)
+                .flatMap {
+                    Mono.fromCallable { expensiveCalculation(it) }
+                            .subscribeOn(Schedulers.elastic())
+                }.doOnComplete { latch.countDown() }
+
+
+        range.subscribe {
+            logger.info("{}", it)
+        }
+
+        latch.await()
+
+    }
 
     /**
      * Direct Sink invocation
