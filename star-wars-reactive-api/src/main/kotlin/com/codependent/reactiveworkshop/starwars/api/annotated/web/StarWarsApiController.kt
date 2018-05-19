@@ -1,4 +1,4 @@
-package com.codependent.reactiveworkshop.starwars.web
+package com.codependent.reactiveworkshop.starwars.api.annotated.web
 
 import com.codependent.reactiveworkshop.starwars.client.StarWarsApiRestTemplate
 import com.codependent.reactiveworkshop.starwars.client.StarWarsApiWebClient
