@@ -34,11 +34,14 @@ class Demo1 : DemoBase(){
                 .flatMap(this::duplicateStringReactive)
                 .doOnComplete { assertEquals(6, elements) }
 
+        //Todavía no ha pasado nada...
+
         strings.subscribe {
             logger.info("{}", it)
             elements++
         }
 
+        //Publishers reusables
         elements = 0
         strings.subscribe {
             logger.info("{}", it)

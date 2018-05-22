@@ -1,31 +1,51 @@
 package com.codependent.reactiveworkshop
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
+import reactor.core.scheduler.Schedulers
 import java.util.concurrent.CountDownLatch
 
 class Demo3 : DemoBase() {
 
     @Test
-    fun hotPublisherTest() {
-        val latch = CountDownLatch(10)
+    fun reactiveAsync1Test() {
+        var elements = 0
+        val strings = getStringListReactive()
+                .map(String::toUpperCase)
+                .flatMap { duplicateStringReactive(it) }
+                .log()
+                .doOnNext {
+                    logger.info("onNext() [{}]", it)
+                    elements++
+                }.doOnComplete {
+                    logger.info("Finished")
+                    assertEquals(6, elements)
+                }
+        logger.info("--PRESUBSCRIBE--")
 
-        val numberGenerator = counter(1000).publish()
-        numberGenerator.connect()
-
-        Thread.sleep(5000)
-
-        numberGenerator.subscribe {
+        strings.subscribe {
             logger.info("Element [{}]", it)
-            latch.countDown()
         }
+    }
 
-        Thread.sleep(5000)
+    @Test
+    fun reactiveAsync2Test() {
+        val latch = CountDownLatch(6)
+        val strings = getStringListReactive()
+                .map(String::toUpperCase)
+                .flatMap { duplicateStringReactive(it) }
+                .log()
+                .doOnNext {
+                    logger.info("onNext() [{}]", it)
+                    latch.countDown()
+                }.doOnComplete {
+                    logger.info("Finished")
+                }.subscribeOn(Schedulers.elastic())
 
-        numberGenerator.subscribe {
-            logger.info("Element2 [{}]", it)
-            latch.countDown()
+        logger.info("--PRESUBSCRIBE--")
+        strings.subscribe {
+            logger.info("Element [{}]", it)
         }
-
         latch.await()
     }
 
