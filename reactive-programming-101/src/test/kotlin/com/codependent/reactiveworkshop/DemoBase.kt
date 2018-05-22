@@ -22,4 +22,10 @@ open class DemoBase {
             Flux.interval(Duration.ofMillis(emissionIntervalMillis))
                     .doOnSubscribe { logger.info("Counter subscribed") }
                     .log()
+
+    protected fun expensiveCalculation(number: Int): Long {
+        val random = (Math.random() * 5000).toLong()
+        Thread.sleep(random)
+        return number * random
+    }
 }

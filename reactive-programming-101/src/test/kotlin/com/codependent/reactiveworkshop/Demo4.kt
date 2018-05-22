@@ -7,7 +7,7 @@ class Demo4 : DemoBase() {
 
     @Test
     fun hotPublisherTest() {
-        val latch = CountDownLatch(1000)
+        val latch = CountDownLatch(10)
 
         val numberGenerator = counter(1000)
                 .publish() //Convierte el Flux ConnectableFlux
