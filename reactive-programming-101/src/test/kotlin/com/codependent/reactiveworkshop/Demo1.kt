@@ -8,6 +8,9 @@ import java.util.stream.Stream
 
 class Demo1 : DemoBase(){
 
+    /**
+     * Lista de String, toUppercase + duplicar elementos
+     */
     @Test
     fun streamOperatorsTest() {
         val stringsStream = getStringList().stream()
@@ -26,6 +29,9 @@ class Demo1 : DemoBase(){
         }
     }
 
+    /**
+     * Lista de String, toUppercase + duplicar elementos
+     */
     @Test
     fun reactiveOperatorsTest() {
         var elements = 0
