@@ -27,11 +27,11 @@ class StarWarsApiController(private val starWarsApiWebClient: StarWarsApiWebClie
         return when (mode) {
             "serial" -> {
                 val returnedFilms = mutableListOf<Film>()
-                val character = starWarsApiWebClient.findCharacter(id).subscribeOn(Schedulers.elastic()).block()
-                character?.films?.forEach { returnedFilms.add(starWarsApiRestTemplate.findFilm(it)) }
+                val character = starWarsApiRestTemplate.findCharacter(id)
+                character.films.forEach { returnedFilms.add(starWarsApiRestTemplate.findFilm(it)) }
                 returnedFilms.toFlux()
             }
-            "parallel-rest-template" ->
+                "parallel-rest-template" ->
                 starWarsApiWebClient.findCharacter(id)
                         .flatMapMany { it.films.toFlux() }
                         .flatMap(starWarsApiRestTemplate::findFilmDeferred)

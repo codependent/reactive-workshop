@@ -23,7 +23,7 @@ class StarWarsApiWebClient {
 
     fun findFilm(uri: URI): Mono<Film> {
         val webClient = WebClient.builder()
-        return webClient.baseUrl("https://swapi.co/api/").build()
+        return webClient.build()
                 .get().uri(uri)
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON).retrieve()
