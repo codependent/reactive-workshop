@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class CryptomarketUiApplication
+class StarWarsApiApplication
 
 fun main(args: Array<String>) {
-    runApplication<CryptomarketUiApplication>(*args)
+    runApplication<StarWarsApiApplication>(*args)
 }
