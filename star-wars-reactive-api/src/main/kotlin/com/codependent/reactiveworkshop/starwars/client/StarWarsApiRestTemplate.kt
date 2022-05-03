@@ -39,7 +39,7 @@ class StarWarsApiRestTemplate {
     }
 
     fun findFilmDeferred(uri: URI): Mono<Film> {
-        return Mono.fromCallable { findFilm(uri) }.log().subscribeOn(Schedulers.elastic())
+        return Mono.fromCallable { findFilm(uri) }.log().subscribeOn(Schedulers.boundedElastic())
     }
 
 }

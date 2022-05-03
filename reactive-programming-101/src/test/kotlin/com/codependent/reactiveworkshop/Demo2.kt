@@ -1,7 +1,7 @@
 package com.codependent.reactiveworkshop
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -19,7 +19,7 @@ class Demo2 : DemoBase() {
             getStringList()
         }.thenApply {
             val upperCaseNumbers = mutableListOf<String>()
-            it.forEach { upperCaseNumbers.add(it.toUpperCase()) }
+            it.forEach { upperCaseNumbers.add(it.uppercase()) }
             logger.info("Uppercase strings [{}]", upperCaseNumbers)
             upperCaseNumbers
         }.thenApply {
@@ -37,7 +37,7 @@ class Demo2 : DemoBase() {
     @Test
     fun streamOperatorsAsyncTest() {
         val stringsStream = getStringList().parallelStream()
-        val strings = stringsStream.map(String::toUpperCase)
+        val strings = stringsStream.map(String::uppercase)
                 .flatMap {
                     logger.info("{}", it)
                     Stream.of(it, it)

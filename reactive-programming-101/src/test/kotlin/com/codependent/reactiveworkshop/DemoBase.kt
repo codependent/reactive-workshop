@@ -3,7 +3,7 @@ package com.codependent.reactiveworkshop
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
-import reactor.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toFlux
 import java.time.Duration
 
 open class DemoBase {

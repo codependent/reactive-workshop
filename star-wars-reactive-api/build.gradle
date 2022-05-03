@@ -1,7 +1,7 @@
 buildscript {
 	ext {
-		kotlinVersion = '1.2.31'
-		springBootVersion = '2.0.0.RELEASE'
+		kotlinVersion = '1.6.21'
+		springBootVersion = '2.6.7'
 	}
 	repositories {
 		mavenCentral()
@@ -22,7 +22,7 @@ apply plugin: 'jacoco'
 
 group = 'com.codependent.cryptomarket'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
+sourceCompatibility = 17
 compileKotlin {
 	kotlinOptions {
 		freeCompilerArgs = ["-Xjsr305=strict"]
@@ -32,7 +32,7 @@ compileKotlin {
 compileTestKotlin {
 	kotlinOptions {
 		freeCompilerArgs = ["-Xjsr305=strict"]
-		jvmTarget = "1.8"
+		jvmTarget = "17"
 	}
 }
 
@@ -43,26 +43,26 @@ repositories {
 
 
 ext {
-	springCloudVersion = 'Finchley.M8'
+	springCloudVersion = '2021.0.2'
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-webflux')
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-	compile('com.fasterxml.jackson.module:jackson-module-kotlin')
-	compile('org.springframework.cloud:spring-cloud-stream')
-    //compile 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
-    //compile 'org.springframework.cloud:spring-cloud-stream-reactive'
-	compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	compile("org.jetbrains.kotlin:kotlin-reflect")
-	compile "org.slf4j:slf4j-api"
-    compile("org.springframework.boot:spring-boot-devtools")
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
-	testCompile('org.springframework.boot:spring-boot-starter-test') {
+	implementation('org.springframework.boot:spring-boot-starter-webflux')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+	implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+	implementation('org.springframework.cloud:spring-cloud-stream')
+    //implementation 'org.springframework.cloud:spring-cloud-starter-stream-kafka'
+    //implementation 'org.springframework.cloud:spring-cloud-stream-reactive'
+	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation "org.slf4j:slf4j-api"
+    implementation("org.springframework.boot:spring-boot-devtools")
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'junit', module: 'junit'
     }
-	testCompile('io.projectreactor:reactor-test')
-	//testCompile('org.springframework.cloud:spring-cloud-stream-test-support')
+	testImplementation('io.projectreactor:reactor-test')
+	//testImplementation('org.springframework.cloud:spring-cloud-stream-test-support')
 }
 
 dependencyManagement {

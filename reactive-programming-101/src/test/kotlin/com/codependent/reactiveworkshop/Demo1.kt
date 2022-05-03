@@ -1,8 +1,7 @@
 package com.codependent.reactiveworkshop
 
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -14,7 +13,7 @@ class Demo1 : DemoBase(){
     @Test
     fun streamOperatorsTest() {
         val stringsStream = getStringList().stream()
-        val strings = stringsStream.map(String::toUpperCase)
+        val strings = stringsStream.map(String::uppercase)
                 .flatMap { Stream.of(it, it) }
                 .collect(Collectors.toList())
         logger.info("{}", strings)
@@ -22,7 +21,7 @@ class Demo1 : DemoBase(){
 
         try {
             stringsStream.count()
-            Assert.fail("No debería llegar aquí")
+            fail("No debería llegar aquí")
         } catch (ise: IllegalStateException) {
             // Los streams no son reusables
             logger.error(ise.message)
@@ -36,7 +35,7 @@ class Demo1 : DemoBase(){
     fun reactiveOperatorsTest() {
         var elements = 0
         val strings = getStringListReactive()
-                .map(String::toUpperCase)
+                .map(String::uppercase)
                 .flatMap(this::duplicateStringReactive)
                 .doOnComplete { assertEquals(6, elements) }
 

@@ -1,10 +1,10 @@
 package com.codependent.reactiveworkshop
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toMono
 import java.util.concurrent.CountDownLatch
 
 class Demo9 : DemoBase() {
@@ -17,16 +17,14 @@ class Demo9 : DemoBase() {
         val latch = CountDownLatch(1)
 
         val range = Flux.range(1, 10)
-                .map {
-                    expensiveCalculation(it)
-                }.doOnComplete { latch.countDown() }
+            .map { expensiveCalculation(it) }
+            .doOnComplete { latch.countDown() }
 
         range.subscribe {
             logger.info("{}", it)
         }
 
         latch.await()
-
     }
 
 
@@ -38,17 +36,15 @@ class Demo9 : DemoBase() {
         val latch = CountDownLatch(1)
 
         val range = Flux.range(1, 10)
-                .map {
-                    expensiveCalculation(it)
-                }.doOnComplete { latch.countDown() }
-                .subscribeOn(Schedulers.elastic())
+            .map { expensiveCalculation(it) }
+            .doOnComplete { latch.countDown() }
+            .subscribeOn(Schedulers.boundedElastic())
 
         range.subscribe {
             logger.info("{}", it)
         }
 
         latch.await()
-
     }
 
     /**
@@ -59,11 +55,8 @@ class Demo9 : DemoBase() {
         val latch = CountDownLatch(1)
 
         val range = Flux.range(1, 10)
-                .flatMap {
-                    expensiveCalculation(it).toMono()
-                            .subscribeOn(Schedulers.elastic())
-                }.doOnComplete { latch.countDown() }
-
+            .flatMap { expensiveCalculation(it).toMono().subscribeOn(Schedulers.boundedElastic()) }
+            .doOnComplete { latch.countDown() }
 
         range.subscribe {
             logger.info("{}", it)
@@ -81,10 +74,9 @@ class Demo9 : DemoBase() {
         val latch = CountDownLatch(1)
 
         val range = Flux.range(1, 10)
-                .flatMap {
-                    Mono.fromCallable { expensiveCalculation(it) }
-                            .subscribeOn(Schedulers.elastic())
-                }.doOnComplete { latch.countDown() }
+            .flatMap {
+                Mono.fromCallable { expensiveCalculation(it) }.subscribeOn(Schedulers.boundedElastic())
+            }.doOnComplete { latch.countDown() }
 
         range.subscribe {
             logger.info("{}", it)
