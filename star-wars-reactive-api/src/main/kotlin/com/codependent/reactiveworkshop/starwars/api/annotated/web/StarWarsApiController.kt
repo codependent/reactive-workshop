@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toFlux
-import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toFlux
 
 @RestController
 class StarWarsApiController(private val starWarsApiWebClient: StarWarsApiWebClient,

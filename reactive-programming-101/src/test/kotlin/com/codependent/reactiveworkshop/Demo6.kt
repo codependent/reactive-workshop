@@ -1,7 +1,6 @@
 package com.codependent.reactiveworkshop
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import reactor.core.publisher.EmitterProcessor
 import reactor.core.publisher.Sinks
 import reactor.core.publisher.Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER
 import reactor.core.scheduler.Schedulers

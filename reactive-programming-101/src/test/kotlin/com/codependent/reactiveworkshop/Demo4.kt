@@ -1,6 +1,5 @@
 package com.codependent.reactiveworkshop
 
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 

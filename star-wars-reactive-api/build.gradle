@@ -54,6 +54,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation "org.slf4j:slf4j-api"
     implementation("org.springframework.boot:spring-boot-devtools")
+	implementation 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.6'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'junit', module: 'junit'
