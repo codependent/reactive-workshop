@@ -25,19 +25,20 @@ class StarWarsApiApplicationTests(@Autowired private val webClient: WebTestClien
 
     @Test
     fun getCharacter() {
-        val films = listOf(URI("https://swapi.co/api/films/2/"),
-                URI("https://swapi.co/api/films/6/"),
-                URI("https://swapi.co/api/films/3/"),
-                URI("https://swapi.co/api/films/1/"),
-                URI("https://swapi.co/api/films/7/"))
+        val films = listOf(
+            URI("https://swapi.dev/api/films/1/"),
+            URI("https://swapi.dev/api/films/2/"),
+            URI("https://swapi.dev/api/films/3/"),
+            URI("https://swapi.dev/api/films/6/")
+        )
         val expected = Character("Luke Skywalker", films)
         val actual = webClient.get()
-                .uri("/functionalapi/people/1")
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-                .exchange()
-                .expectStatus().isOk
-                .expectBody<Character>()
-                .returnResult().responseBody
+            .uri("/functionalapi/people/1")
+            .accept(MediaType.APPLICATION_JSON_UTF8)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<Character>()
+            .returnResult().responseBody
 
         assertEquals(expected, actual)
     }
@@ -45,12 +46,12 @@ class StarWarsApiApplicationTests(@Autowired private val webClient: WebTestClien
     @Test
     fun getCharacterFilms() {
         val actual = webClient.get()
-                .uri("/functionalapi/people/1/films")
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-                .exchange()
-                .expectStatus().isOk
-                .expectBodyList<Film>()
-                .returnResult().responseBody
-        assertEquals(5, actual?.size)
+            .uri("/functionalapi/people/1/films")
+            .accept(MediaType.APPLICATION_JSON_UTF8)
+            .exchange()
+            .expectStatus().isOk
+            .expectBodyList<Film>()
+            .returnResult().responseBody
+        assertEquals(4, actual?.size)
     }
 }

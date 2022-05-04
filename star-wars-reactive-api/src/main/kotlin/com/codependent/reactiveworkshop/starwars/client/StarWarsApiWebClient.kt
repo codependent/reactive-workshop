@@ -14,7 +14,7 @@ class StarWarsApiWebClient {
     private val webClient = WebClient.builder()
 
     fun findCharacter(id: Int): Mono<Character> {
-        return webClient.baseUrl("https://swapi.co/api/").build()
+        return webClient.baseUrl("https://swapi.dev/api/").build()
                 .get().uri("/people/$id/")
                 .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON).retrieve()

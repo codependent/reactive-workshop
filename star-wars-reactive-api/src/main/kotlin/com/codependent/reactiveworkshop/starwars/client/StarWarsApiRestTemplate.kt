@@ -23,7 +23,7 @@ class StarWarsApiRestTemplate {
         headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE)
         headers.add("User-Agent", "curl/7.37.0")
         val httpEntity = HttpEntity(null, headers)
-        val exchange = restTemplate.exchange("https://swapi.co/api/people/{id}", HttpMethod.GET, httpEntity, Character::class.java, id)
+        val exchange = restTemplate.exchange("https://swapi.dev/api/people/{id}", HttpMethod.GET, httpEntity, Character::class.java, id)
         return exchange.body as Character
     }
 

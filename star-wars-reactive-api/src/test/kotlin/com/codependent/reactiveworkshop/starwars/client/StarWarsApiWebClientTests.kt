@@ -16,7 +16,7 @@ class StarWarsApiWebClientTests {
 
     @Test
     fun findFilm() {
-        create(starWarsApiWebClient.findFilm(URI("https://swapi.co/api/films/1/")))
+        create(starWarsApiWebClient.findFilm(URI("https://swapi.dev/api/films/1/")))
                 .expectNextCount(1)
                 .verifyComplete()
     }
