@@ -1,148 +1,135 @@
 package com.codependent.reactiveworkshop
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Sinks
-import reactor.core.publisher.Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER
-import reactor.core.scheduler.Schedulers
 import java.util.concurrent.CountDownLatch
 
 class Demo6 : DemoBase() {
 
+    /**
+     * Sólo soporta un suscriptor
+     */
     @Test
-    fun backPressureDirectAllOrNothingTest() {
-
+    fun manyUnicastSink() {
         val latch = CountDownLatch(1)
-        val latch2 = CountDownLatch(1)
 
-        val sink = Sinks.many().multicast().directAllOrNothing<Int>()
+        val processor =  Sinks.many().unicast().onBackpressureBuffer<Long>()
 
-        val result: Sinks.EmitResult = sink.tryEmitNext(1)
+        processor.tryEmitNext(12)
+        processor.tryEmitNext(23)
 
-        assertEquals(FAIL_ZERO_SUBSCRIBER, result)
-
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
+        processor.asFlux().log()
+            .doOnComplete(latch::countDown)
             .subscribe {
-                logger.info("Subscriber1 {}", it)
+                logger.info("Element1 [{}]", it)
             }
 
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
-            .doOnComplete { latch2.countDown() }
+        processor.asFlux().log()
+            .doOnError { assertEquals(IllegalStateException::class, it.javaClass) }
+            .doOnComplete(latch::countDown)
             .subscribe {
-                logger.info("Subscriber2 {}", it)
-                Thread.sleep(100)
-                if (it == 256) {
-                    latch.countDown()
-                }
+                logger.info("Element2 [{}]", it)
             }
 
-        (1..400)
-            .forEach {
-                val res = sink.tryEmitNext(it)
-                logger.info("Result {}", res)
-            }
+        processor.tryEmitNext(45)
+        processor.tryEmitComplete()
 
         latch.await()
+    }
 
-        sink.tryEmitNext(5000)
-        sink.tryEmitComplete()
+    /**
+     * Sólo emite el primer elemento haciendo replay a los siguientes suscriptores
+     */
+    @Test
+    fun unicastProcessor2() {
+        val processor = Sinks.one<Long>()
 
-        latch2.await()
+        val mono = processor.asMono()
+
+        mono.subscribe {
+            logger.info("Element [{}]", it)
+            assertEquals(1L, it)
+        }
+
+        mono.subscribe {
+            logger.info("Element2 [{}]", it)
+            assertEquals(1L, it)
+        }
+
+        processor.tryEmitValue(1L)
+        processor.tryEmitValue(2L)
+
+        mono.subscribe {
+            logger.info("Element3 [{}]", it)
+            assertEquals(1L, it)
+        }
 
     }
 
+    /**
+     *
+     */
     @Test
-    fun backPressureDirectBestEffortTest() {
+    fun multicastReplayLimitSink() {
+        val latch = CountDownLatch(100)
 
-        val latch = CountDownLatch(1)
-        val latch2 = CountDownLatch(1)
+        val processor =  Sinks.many().replay().limit<Int>(100)
+        (1..1000).forEach {
+            processor.tryEmitNext(it)
+        }
 
-        val sink = Sinks.many().multicast().directBestEffort<Int>()
 
-        val result: Sinks.EmitResult = sink.tryEmitNext(1)
+        processor.asFlux().doOnComplete {
+            logger.info("Subscriber1 onComplete()")
+        }.subscribe {
+            logger.info("Subscriber1 onNext() {}", it)
+        }
 
-        assertEquals(FAIL_ZERO_SUBSCRIBER, result)
+        Thread.sleep(1000)
 
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
-            .subscribe {
-                logger.info("Subscriber1 {}", it)
-            }
+        processor.tryEmitNext(1001)
 
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
-            .doOnComplete { latch2.countDown() }
-            .subscribe {
-                logger.info("Subscriber2 {}", it)
-                Thread.sleep(100)
-                if (it == 256) {
-                    latch.countDown()
-                }
-            }
+        processor.asFlux().doOnComplete {
+            logger.info("Subscriber2 onComplete()")
+            latch.countDown()
+        }.subscribe {
+            logger.info("Subscriber2 onNext() {}", it)
+            latch.countDown()
+        }
 
-        (1..1000)
-            .forEach {
-                val res = sink.tryEmitNext(it)
-                logger.info("Result {}", res)
-            }
+        Thread.sleep(2000)
+
+        processor.tryEmitNext(5000)
+        processor.tryEmitComplete()
 
         latch.await()
-
-        sink.tryEmitNext(5000)
-        sink.tryEmitComplete()
-
-        latch2.await()
-
     }
 
     @Test
-    fun backPressureOnBackpressureBufferTest() {
-
-        val latch = CountDownLatch(1)
-        val latch2 = CountDownLatch(1)
-
+    fun multicastNewData() {
         val sink = Sinks.many().multicast().onBackpressureBuffer<Int>()
 
-        //Warms up with 256 cached elements when no subscribers
+        sink.asFlux().doOnComplete {
+            logger.info("Subscriber1 onComplete()")
+        }.subscribe {
+            logger.info("Subscriber1 onNext() {}", it)
+            assertTrue(it == 1 || it == 2)
+        }
 
-        (1..300)
-            .forEach {
-                val res = sink.tryEmitNext(it)
-                logger.info("Result {}", res)
-            }
+        sink.tryEmitNext(1)
+        sink.tryEmitNext(2)
 
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
-            .subscribe {
-                logger.info("Subscriber1 {}", it)
-            }
+        sink.asFlux().doOnComplete {
+            logger.info("Subscriber2 onComplete()")
+        }.subscribe {
+            logger.info("Subscriber2 onNext() {}", it)
+            assertEquals(3, it)
+        }
 
-        sink.asFlux()
-            .publishOn(Schedulers.boundedElastic())
-            .doOnComplete { latch2.countDown() }
-            .subscribe {
-                logger.info("Subscriber2 {}", it)
-                Thread.sleep(100)
-                if (it == 812) {
-                    latch.countDown()
-                }
-            }
-
-        (301..1000)
-            .forEach {
-                val res = sink.tryEmitNext(it)
-                logger.info("Result {}", res)
-            }
-
-        latch.await()
-
-        sink.tryEmitNext(5000)
+        sink.tryEmitNext(3)
         sink.tryEmitComplete()
-
-        latch2.await()
     }
-
 
 }
