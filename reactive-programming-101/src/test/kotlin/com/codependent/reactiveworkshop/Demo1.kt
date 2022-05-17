@@ -1,6 +1,5 @@
 package com.codependent.reactiveworkshop
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.stream.Collectors
@@ -20,6 +19,7 @@ class Demo1 : DemoBase(){
         logger.info("{}", strings)
         assertEquals(6, strings.size)
 
+        //Los Streams no se pueden reutilizar
         assertThrows(IllegalStateException::class.java) { stringsStream.count() }
     }
 
