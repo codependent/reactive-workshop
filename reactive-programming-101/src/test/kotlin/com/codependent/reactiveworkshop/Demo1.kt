@@ -8,7 +8,7 @@ import java.util.stream.Stream
 class Demo1 : DemoBase(){
 
     /**
-     * Lista de String, toUppercase + duplicar elementos
+     * Lista de String, duplicar elementos + uppercase
      */
     @Test
     fun streamOperatorsTest() {
@@ -24,7 +24,7 @@ class Demo1 : DemoBase(){
     }
 
     /**
-     * Lista de String, toUppercase + duplicar elementos
+     * Lista de String, duplicar elementos + uppercase
      */
     @Test
     fun reactiveOperatorsTest() {
