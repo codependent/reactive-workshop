@@ -13,8 +13,10 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 
 @RestController
-class StarWarsApiController(private val starWarsApiWebClient: StarWarsApiWebClient,
-                            private val starWarsApiRestTemplate: StarWarsApiRestTemplate) {
+class StarWarsApiController(
+    private val starWarsApiWebClient: StarWarsApiWebClient,
+    private val starWarsApiRestTemplate: StarWarsApiRestTemplate
+) {
 
     @GetMapping("/api/people/{id}")
     fun getCharacter(@PathVariable id: Int): Mono<Character> {
@@ -30,14 +32,14 @@ class StarWarsApiController(private val starWarsApiWebClient: StarWarsApiWebClie
                 character.films.forEach { returnedFilms.add(starWarsApiRestTemplate.findFilm(it)) }
                 returnedFilms.toFlux()
             }
-                "parallel-rest-template" ->
+            "parallel-rest-template" ->
                 starWarsApiWebClient.findCharacter(id)
-                        .flatMapMany { it.films.toFlux() }
-                        .flatMap(starWarsApiRestTemplate::findFilmDeferred)
+                    .flatMapMany { it.films.toFlux() }
+                    .flatMap(starWarsApiRestTemplate::findFilmDeferred)
             else ->
                 starWarsApiWebClient.findCharacter(id)
-                        .flatMapMany { it.films.toFlux() }
-                        .flatMap(starWarsApiWebClient::findFilm)
+                    .flatMapMany { it.films.toFlux() }
+                    .flatMap(starWarsApiWebClient::findFilm)
         }
     }
 
